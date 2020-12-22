@@ -1,1 +1,1 @@
-export const foo = () => console.log('yeap')
+export { sendErrorToSentry } from './sendErrorToSentry';
