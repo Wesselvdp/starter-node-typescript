@@ -1,10 +1,14 @@
 import 'module-alias/register';
-
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
 import * as Sentry from '@sentry/node';
 import { typeDefs, resolvers } from './graphql';
+import mongoose from 'mongoose';
 
+// Load env variables from .env file when in production
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -28,6 +32,16 @@ server.applyMiddleware({
   app,
   path: '/',
   cors: true, // disables the apollo-server-express cors to allow the cors middleware use
+});
+
+// Mongodb
+const { mongoUserPass, mongoUserName, mongoDBName } = process.env;
+const uri = `mongodb+srv://${mongoUserName}:${mongoUserPass}@cluster0.2xrum.mongodb.net/${mongoDBName}?retryWrites=true&w=majority`;
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function () {
+  console.log('connected!');
 });
 
 app.listen(port, () => {
